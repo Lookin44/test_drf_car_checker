@@ -31,9 +31,15 @@ class CarModel(models.Model):
 
 class Car(models.Model):
     """Модель описывающая автомобиль для постановки на учет в базу."""
-    car_brand = models.ForeignKey('CarBrand', on_delete=models.PROTECT)
-    car_model = models.ForeignKey('CarModel', on_delete=models.PROTECT)
-    car_color = models.ForeignKey('CarColor', on_delete=models.PROTECT)
+    car_brand = models.ForeignKey(
+        'CarBrand', on_delete=models.PROTECT, related_name='cars'
+    )
+    car_model = models.ForeignKey(
+        'CarModel', on_delete=models.PROTECT, related_name='cars'
+    )
+    car_color = models.ForeignKey(
+        'CarColor', on_delete=models.PROTECT, related_name='cars'
+    )
     car_register_number = models.CharField(max_length=9, unique=True)
     car_create_date = models.IntegerField()
     car_vin = models.CharField(max_length=17, unique=True)
@@ -42,5 +48,5 @@ class Car(models.Model):
     car_date_add = models.DateTimeField(auto_now_add=True)
     car_date_update = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.car_vin}, {self.car_model}, {self.car_color}'
