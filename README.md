@@ -1,2 +1,2 @@
-# test_drf_car_checker
+# DRF car-cheaker
 Тестовое API-приложение для ведение учета автомобилей
