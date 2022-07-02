@@ -1,21 +1,25 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from .models import Car, CarBrand
-
-
-class CarBrandSerializer(ModelSerializer):
-
-    class Meta:
-        model = CarBrand
-        fields = '__all__'
+from .models import Car
 
 
 class CarSerializer(ModelSerializer):
-    car_brand = serializers.CharField(read_only=True, source='car_brand.brand')
-    car_model = serializers.CharField(read_only=True, source='car_model.model')
-    car_color = serializers.CharField(read_only=True, source='car_color.color')
 
     class Meta:
         model = Car
-        fields = '__all__'
+        fields = (
+            'car_brand',
+            'car_model',
+            'car_color',
+            'car_register_number',
+            'car_create_date',
+            'car_vin',
+            'car_sts_number',
+            'car_sts_date',
+        )
+
+
+class FileUploadSerializer(serializers.Serializer):
+
+    file = serializers.FileField()
