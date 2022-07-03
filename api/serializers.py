@@ -9,6 +9,7 @@ class CarSerializer(ModelSerializer):
     class Meta:
         model = Car
         fields = (
+            'id',
             'car_brand',
             'car_model',
             'car_color',

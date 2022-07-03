@@ -1,8 +1,12 @@
+import datetime as dt
+
 import pandas as pd
-from rest_framework import generics
+from django.http import HttpResponse
 from rest_framework import mixins, filters, status
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from .models import Car
@@ -31,17 +35,17 @@ class CarViewSet(mixins.CreateModelMixin,
         'car_sts_number',
         'car_sts_date',
     )
-    filter_backends = (filters.SearchFilter, )
+    filter_backends = (filters.SearchFilter,)
     queryset = Car.objects.all()
     serializer_class = CarSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
 
-class UploadFileView(generics.CreateAPIView):
-    """Представление отвечающее за импорт scv таблицы в БД. """
+class UploadFileView(CreateAPIView):
+    """Представление отвечающее за импорт scv и xlsx таблицы в БД. """
     serializer_class = FileUploadSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         file = serializer.validated_data['file']
@@ -62,7 +66,7 @@ class UploadFileView(generics.CreateAPIView):
                 )
                 new_file.save()
             return Response({"status": "Загружено"},
-                        status.HTTP_201_CREATED)
+                            status.HTTP_201_CREATED)
 
         elif _dict_file_obj['_name'].endswith('.xlsx'):
             reader = pd.read_excel(file)
@@ -89,3 +93,43 @@ class UploadFileView(generics.CreateAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class CSVviewSet(APIView):
+    """Представление для сохранения базы в csv формате."""
+
+    def get(self, request):
+        file_name = dt.datetime.today().strftime('%d-%m-%Y')
+
+        response = HttpResponse(
+            content_type='text/csv',
+            headers={
+                'Content-Disposition': 'attachment; '
+                                       f'filename="{file_name}.csv"'},
+        )
+
+        serializer = CarSerializer(Car.objects.all(), many=True)
+        dataframe = pd.DataFrame(serializer.data)
+
+        writer = dataframe.to_csv(response)
+        return response
+
+
+class XLSXviewSet(APIView):
+    """Представление для сохранения базы в xlsx формате."""
+
+    def get(self, request):
+        file_name = dt.datetime.today().strftime('%d-%m-%Y')
+
+        response = HttpResponse(
+            content_type='text/xlsx',
+            headers={
+                'Content-Disposition': 'attachment; '
+                                       f'filename="{file_name}.xlsx"'},
+        )
+
+        serializer = CarSerializer(Car.objects.all(), many=True)
+        dataframe = pd.DataFrame(serializer.data)
+
+        writer = dataframe.to_excel(response)
+        return response
